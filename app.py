@@ -78,10 +78,34 @@ def robots():
         "static",
         "robots.txt"
     )
+from flask import jsonify
+
+@app.route("/api/blogs")
+def api_blogs():
+
+    conn = get_db_connection()
+
+    blogs = conn.execute("""
+    SELECT title, slug, meta_description
+    FROM blogs
+    ORDER BY id DESC
+    LIMIT 20
+    """).fetchall()
+
+    conn.close()
+
+    return jsonify([
+        {
+            "title": blog["title"],
+            "slug": blog["slug"],
+            "description": blog["meta_description"]
+        }
+        for blog in blogs
+    ])
 if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=8084,
+        port=8086,
         debug=False
     )
