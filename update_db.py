@@ -1,6 +1,7 @@
 import sqlite3
 
-conn = sqlite3.connect("database.db")
+# CONNECT DATABASE
+conn = sqlite3.connect("homeartist.db")
 
 cursor = conn.cursor()
 
@@ -12,6 +13,6 @@ ADD COLUMN slug TEXT
 
 conn.commit()
 
-print("Slug column added successfully")
+print("slug column added successfully")
 
 conn.close()

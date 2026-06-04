@@ -1,6 +1,7 @@
 # =====================================================
+# FILE: trends_blog.py
 # HOMEARTIST.ONLINE AI BLOG GENERATOR
-# FULL PROFESSIONAL VERSION
+# FULL SEO + SITEMAP + SLUG VERSION
 # =====================================================
 
 import requests
@@ -28,7 +29,9 @@ CREATE TABLE IF NOT EXISTS blogs (
 
     content TEXT,
 
-    created_at TEXT
+    created_at TEXT,
+
+    slug TEXT
 )
 """)
 
@@ -160,16 +163,35 @@ def clean_text(text):
     return text.strip()
 
 # =====================================================
+# CREATE SEO SLUG
+# =====================================================
+
+def create_slug(text):
+
+    text = text.lower()
+
+    # REMOVE SPECIAL CHARACTERS
+    text = re.sub(r'[^a-z0-9\s-]', '', text)
+
+    # REPLACE SPACES WITH -
+    text = text.replace(" ", "-")
+
+    # REMOVE MULTIPLE -
+    text = re.sub(r'-+', '-', text)
+
+    return text.strip("-")
+
+# =====================================================
 # GENERATE BLOG USING OLLAMA
 # =====================================================
 
 def generate_blog(prompt):
 
     response = requests.post(
-        "http://127.0.0.1:11436/api/generate",
+        "http://127.0.0.1:11446/api/generate",
         json={
 
-            "model": "gemma:2b",
+            "model": "phi3:mini",
 
             "prompt": prompt,
 
@@ -202,7 +224,7 @@ def generate_blog(prompt):
 # MAIN LOOP
 # =====================================================
 
-for entry in feed.entries[:5]:
+for entry in feed.entries[:3]:
 
     original_trend = entry.title
 
@@ -292,6 +314,8 @@ Premium, modern, emotional, aesthetic.
 
     title = lines[0][:150]
 
+    slug = create_slug(title)
+
     meta_description = (
         f"Explore customized art ideas, couple portraits, "
         f"mobile cover art, and handmade sketches inspired by {original_trend}."
@@ -306,9 +330,10 @@ Premium, modern, emotional, aesthetic.
         title,
         meta_description,
         content,
-        created_at
+        created_at,
+        slug
     )
-    VALUES (?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?)
     """, (
 
         title,
@@ -317,12 +342,88 @@ Premium, modern, emotional, aesthetic.
 
         blog_content,
 
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+
+        slug
     ))
 
     conn.commit()
 
     print("✅ Blog Saved Successfully")
+
+# =====================================================
+# GENERATE SITEMAP.XML
+# =====================================================
+
+cursor.execute("""
+SELECT slug FROM blogs
+""")
+
+blogs = cursor.fetchall()
+
+today = datetime.now().strftime("%Y-%m-%d")
+
+xml = """<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+"""
+
+# HOMEPAGE
+
+xml += f"""
+<url>
+
+    <loc>
+    https://homeartist.online/
+    </loc>
+
+    <lastmod>{today}</lastmod>
+
+    <changefreq>daily</changefreq>
+
+    <priority>1.0</priority>
+
+</url>
+"""
+
+# BLOG PAGES
+
+for blog in blogs:
+
+    slug = blog[0]
+
+    if slug is None:
+        continue
+
+    xml += f"""
+<url>
+
+    <loc>
+    https://homeartist.online/blog/{slug}
+    </loc>
+
+    <lastmod>{today}</lastmod>
+
+    <changefreq>daily</changefreq>
+
+    <priority>0.8</priority>
+
+</url>
+"""
+
+xml += "\n</urlset>"
+
+# SAVE SITEMAP
+
+with open(
+    "static/sitemap.xml",
+    "w",
+    encoding="utf-8"
+) as file:
+
+    file.write(xml)
+
+print("✅ sitemap.xml generated successfully")
 
 # =====================================================
 # CLOSE DATABASE

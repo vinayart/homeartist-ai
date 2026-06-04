@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 def get_db_connection():
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect("homeartist.db")
 
     conn.row_factory = sqlite3.Row
 
@@ -40,22 +40,25 @@ def home():
     return render_template("index.html", blogs=blogs)
 
 # ============================================
-# SINGLE BLOG PAGE
+# SINGLE BLOG PAGE USING SEO SLUG
 # ============================================
 
-@app.route("/blog/<int:id>")
-def blog(id):
+@app.route("/blog/<slug>")
+def blog(slug):
 
     conn = get_db_connection()
 
     blog = conn.execute("""
     SELECT * FROM blogs
-    WHERE id = ?
-    """, (id,)).fetchone()
+    WHERE slug = ?
+    """, (slug,)).fetchone()
 
     conn.close()
 
-    return render_template("blog.html", blog=blog)
+    return render_template(
+        "blog.html",
+        blog=blog
+    )
 
 # ============================================
 # START FLASK
@@ -79,6 +82,6 @@ if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=8080,
+        port=8084,
         debug=False
     )

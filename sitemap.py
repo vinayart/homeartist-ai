@@ -5,7 +5,7 @@ from datetime import datetime
 # DATABASE CONNECTION
 # ============================================
 
-conn = sqlite3.connect("database.db")
+conn = sqlite3.connect("homeartist.db")
 
 cursor = conn.cursor()
 
@@ -38,7 +38,7 @@ xml += f"""
 <url>
 
     <loc>
-    https://YOUR-RENDER-URL.onrender.com/
+   https://www.homeartist.online/
     </loc>
 
     <lastmod>{today}</lastmod>
@@ -62,7 +62,7 @@ for blog in blogs:
 <url>
 
     <loc>
-    https://YOUR-RENDER-URL.onrender.com/blog/{slug}
+    https://www.homeartist.online//blog/{slug}
     </loc>
 
     <lastmod>{today}</lastmod>
