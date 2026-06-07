@@ -224,7 +224,7 @@ def generate_blog(prompt):
 # MAIN LOOP
 # =====================================================
 
-for entry in feed.entries[:3]:
+for entry in feed.entries[:8]:
 
     original_trend = entry.title
 
